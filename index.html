@@ -1,0 +1,39 @@
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Status Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<h1>Status Report - Projeto Compliance</h1>
+
+<h2>Resumo</h2>
+<ul>
+<li>Total atividades: 23</li>
+<li>Concluídas: 0</li>
+<li>Em andamento: 0</li>
+<li>Não iniciadas: 23</li>
+</ul>
+
+<canvas id="grafico" width="400" height="200"></canvas>
+
+<script>
+const ctx = document.getElementById('grafico');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Concluído','Em andamento','Não iniciado'],
+        datasets: [{
+            data: [0,0,23]
+        }]
+    }
+});
+</script>
+
+<h2>Detalhamento das Atividades</h2>
+<table border="1">
+<tr>
+<th>Atividade</th><th>Responsável</th><th>Status</th><th>Início</th><th>Fim</th>
+</tr>
+<tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr></table></body></html>
