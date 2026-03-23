@@ -1,39 +1,519 @@
-
-<html>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Status Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Status Report - Projeto Compliance</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --accent: #2563eb;
+  --good: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
+  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.header {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: white;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.header h1 {
+  margin: 0 0 6px 0;
+  font-size: 28px;
+}
+.header p {
+  margin: 0;
+  opacity: .92;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.kpi-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 6px;
+}
+.kpi-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.filters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.filters label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.filters input, .filters select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: white;
+}
+.charts {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.chart-box {
+  height: 340px;
+}
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+}
+.table-wrap {
+  overflow: auto;
+  border-radius: 16px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+th, td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  vertical-align: top;
+}
+th {
+  text-align: left;
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  z-index: 1;
+}
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+.badge.concluido { background: rgba(22,163,74,.12); color: var(--good); }
+.badge.andamento { background: rgba(217,119,6,.12); color: var(--warn); }
+.badge.naoiniciado { background: rgba(107,114,128,.14); color: #4b5563; }
+.badge.outro { background: rgba(37,99,235,.12); color: var(--accent); }
+
+.timeline-wrap {
+  overflow-x: auto;
+}
+.timeline-grid {
+  min-width: 900px;
+}
+.timeline-row {
+  display: grid;
+  grid-template-columns: 280px 120px 120px 120px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.timeline-header {
+  display: grid;
+  grid-template-columns: 280px 120px 120px 120px 1fr;
+  gap: 10px;
+  font-weight: bold;
+  color: var(--muted);
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--line);
+}
+.bar-area {
+  position: relative;
+  height: 22px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(
+      to right,
+      #f3f4f6 0,
+      #f3f4f6 calc(100%/16 - 1px),
+      #ffffff calc(100%/16 - 1px),
+      #ffffff calc(100%/16)
+    );
+  border: 1px solid var(--line);
+}
+.bar {
+  position: absolute;
+  top: 2px;
+  height: 16px;
+  border-radius: 999px;
+}
+.bar.concluido { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.bar.andamento { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.bar.naoiniciado { background: linear-gradient(90deg, #9ca3af, #6b7280); }
+.bar.outro { background: linear-gradient(90deg, #60a5fa, #2563eb); }
+
+.legend {
+  display: flex;
+  gap: 16px;
+  margin: 10px 0 16px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+.legend span::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 99px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.legend .c1::before { background: #16a34a; }
+.legend .c2::before { background: #d97706; }
+.legend .c3::before { background: #6b7280; }
+.legend .c4::before { background: #2563eb; }
+
+.footer-note {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+  .grid, .filters, .charts {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 700px) {
+  .grid, .filters, .charts {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 </head>
 <body>
-<h1>Status Report - Projeto Compliance</h1>
+<div class="container">
+  <div class="header">
+    <h1>Status Report — Projeto Compliance</h1>
+    <p>Relatório executivo com gráficos, filtros e visão detalhada por obrigação, responsável, sistema, início, término e status.</p>
+  </div>
 
-<h2>Resumo</h2>
-<ul>
-<li>Total atividades: 23</li>
-<li>Concluídas: 0</li>
-<li>Em andamento: 0</li>
-<li>Não iniciadas: 23</li>
-</ul>
+  <div class="grid">
+    <div class="card"><div class="kpi-label">Total de atividades</div><div class="kpi-value" id="kpiTotal">14</div><div class="kpi-sub">Escopo atual</div></div>
+    <div class="card"><div class="kpi-label">Planejado</div><div class="kpi-value" id="kpiPlanned">10</div><div class="kpi-sub">Com data de término</div></div>
+    <div class="card"><div class="kpi-label">Realizado</div><div class="kpi-value" id="kpiDone">0</div><div class="kpi-sub">Concluídas</div></div>
+    <div class="card"><div class="kpi-label">Atrasadas</div><div class="kpi-value" id="kpiLate">0</div><div class="kpi-sub">Prazo vencido e não concluídas</div></div>
+  </div>
 
-<canvas id="grafico" width="400" height="200"></canvas>
+  <div class="card" style="margin-bottom:18px;">
+    <div class="section-title">Filtros</div>
+    <div class="filters">
+      <div>
+        <label>Obrigação</label>
+        <select id="fObrigacao"><option value="">Todas</option></select>
+      </div>
+      <div>
+        <label>Responsável</label>
+        <select id="fResponsavel"><option value="">Todos</option></select>
+      </div>
+      <div>
+        <label>Sistema</label>
+        <select id="fSistema"><option value="">Todos</option></select>
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="fStatus"><option value="">Todos</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="card chart-box">
+      <div class="section-title">Distribuição por status</div>
+      <canvas id="chartStatus"></canvas>
+    </div>
+    <div class="card chart-box">
+      <div class="section-title">Atividades por responsável</div>
+      <canvas id="chartResp"></canvas>
+    </div>
+    <div class="card chart-box">
+      <div class="section-title">Atividades por sistema</div>
+      <canvas id="chartSistema"></canvas>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px;">
+    <div class="section-title">Cronograma visual das atividades</div>
+    <div class="legend">
+      <span class="c1">Concluído</span>
+      <span class="c2">Em andamento</span>
+      <span class="c3">Não iniciado</span>
+      <span class="c4">Outros</span>
+    </div>
+    <div class="timeline-wrap">
+      <div class="timeline-grid" id="timelineGrid"></div>
+    </div>
+    <div class="footer-note">Janela do cronograma: 23/03/2026 a 07/04/2026</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Detalhamento das atividades</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Atividade</th>
+            <th>Obrigação</th>
+            <th>Responsável</th>
+            <th>Sistema</th>
+            <th>Status</th>
+            <th>Início</th>
+            <th>Término</th>
+            <th>Observação</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyActivities"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <script>
-const ctx = document.getElementById('grafico');
-new Chart(ctx, {
+const rawData = [{"num": "1", "atividade": "Integração das notas fiscais de serviço emitidas em 01/26 e 02/26 para ambiente de PROD", "obrigacao": "EFD Contribuições", "responsavel": "Murilo", "sistema": "Compliance", "status": "Não iniciado", "inicio": "23/03/2026", "termino": "25/03/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 0, "duration": 3}}, {"num": "2", "atividade": "Ajudar Marina na geração ECD - subir a carga", "obrigacao": "ECD", "responsavel": "Cauê", "sistema": "Compliance", "status": "Não iniciado", "inicio": "06/04/2026", "termino": "07/04/2026", "observacao": "", "timeline": {"hasDates": true, "offset": 14, "duration": 2}}, {"num": "3", "atividade": "CTe emissão própria - CFOP 5352 - não estão integrando pro livro de saída ICMS", "obrigacao": "EFD ICMS IPI", "responsavel": "Cauê", "sistema": "Compliance", "status": "Não iniciado", "inicio": "23/03/2026", "termino": "24/03/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 0, "duration": 2}}, {"num": "4", "atividade": "Inclusão de código de ajuste C195/C197", "obrigacao": "EFD ICMS IPI", "responsavel": "Murilo", "sistema": "Compliance", "status": "Não iniciado", "inicio": "30/03/2026", "termino": "02/04/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 7, "duration": 4}}, {"num": "5", "atividade": "ICMS-ST e IPI não somam ao total da nota", "obrigacao": "EFD ICMS IPI", "responsavel": "Cauê", "sistema": "Compliance", "status": "Não iniciado", "inicio": "25/03/2026", "termino": "27/03/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 2, "duration": 3}}, {"num": "6", "atividade": "Integração CTe filial destino - Correto filial Tomador", "obrigacao": "EFD ICMS IPI", "responsavel": "Murilo", "sistema": "Compliance", "status": "Não iniciado", "inicio": "25/03/2026", "termino": "27/03/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 2, "duration": 3}}, {"num": "7", "atividade": "ICMS-ST interando como DIFAL", "obrigacao": "EFD ICMS IPI", "responsavel": "Cauê", "sistema": "Compliance", "status": "Não iniciado", "inicio": "27/03/2026", "termino": "31/03/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 4, "duration": 5}}, {"num": "8", "atividade": "Nota fiscal de energia - valor total não está considerando a CIP - extrator possui o valor total correto", "obrigacao": "EFD ICMS IPI", "responsavel": "Murilo", "sistema": "Compliance", "status": "Não iniciado", "inicio": "27/03/2026", "termino": "31/03/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 4, "duration": 5}}, {"num": "9", "atividade": "Valor total de INSS com erro (valor de 1 linha) - NFSe com mais de 1 item", "obrigacao": "REINF", "responsavel": "Caue", "sistema": "Compliance", "status": "Não iniciado", "inicio": "30/03/2026", "termino": "02/04/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 7, "duration": 4}}, {"num": "10", "atividade": "REINF registro R1070 - Obrigatoriedade", "obrigacao": "REINF", "responsavel": "Murilo", "sistema": "Compliance", "status": "Não iniciado", "inicio": "31/03/2026", "termino": "02/04/2026", "observacao": "e-mail enviado para consultores Compliance", "timeline": {"hasDates": true, "offset": 8, "duration": 3}}, {"num": "11", "atividade": "Erro de validação ao extrair PIS e COFINS da Invoice escrituração (FDC)", "obrigacao": "EFD ICMS IPI", "responsavel": "Tiago", "sistema": "Oracle", "status": "Em andamento", "inicio": "", "termino": "", "observacao": "Chamado 109001 - Prazo 10 dias", "timeline": {"hasDates": false, "offset": null, "duration": null}}, {"num": "12", "atividade": "Erro no DIFAL de alíquota e Base e FCP", "obrigacao": "EFD ICMS IPI", "responsavel": "Sonia", "sistema": "Setup", "status": "Em andamento", "inicio": "", "termino": "", "observacao": "Peloton", "timeline": {"hasDates": false, "offset": null, "duration": null}}, {"num": "13", "atividade": "Nota de devolução de molécula - referência com dados da TAG", "obrigacao": "EFD ICMS IPI", "responsavel": "Tiago", "sistema": "Oracle", "status": "Em andamento", "inicio": "", "termino": "", "observacao": "Chamado 111220 - customização", "timeline": {"hasDates": false, "offset": null, "duration": null}}, {"num": "14", "atividade": "Criação de campos NFSe - Código LC e Natureza de rendimento - EXTRATOR", "obrigacao": "REINF", "responsavel": "Tiago", "sistema": "Oracle", "status": "Em andamento", "inicio": "", "termino": "", "observacao": "Chamado 110965", "timeline": {"hasDates": false, "offset": null, "duration": null}}];
+const TOTAL_DAYS = 16;
+const MIN_DATE = "23/03/2026";
+const TODAY = "23/03/2026";
+
+function normalizeStatus(v) {
+  const s = (v || "").toLowerCase();
+  if (s.includes("conclu")) return "Concluído";
+  if (s.includes("andamento")) return "Em andamento";
+  if (s.includes("não iniciado") || s.includes("nao iniciado")) return "Não iniciado";
+  return v || "Sem status";
+}
+
+function badgeClass(v) {
+  const s = normalizeStatus(v).toLowerCase();
+  if (s.includes("conclu")) return "concluido";
+  if (s.includes("andamento")) return "andamento";
+  if (s.includes("não iniciado")) return "naoiniciado";
+  return "outro";
+}
+
+function fillSelect(id, values) {
+  const el = document.getElementById(id);
+  [...new Set(values.filter(Boolean))].sort((a,b) => a.localeCompare(b, 'pt-BR')).forEach(v => {
+    const op = document.createElement('option');
+    op.value = v;
+    op.textContent = v;
+    el.appendChild(op);
+  });
+}
+
+fillSelect("fObrigacao", rawData.map(x => x.obrigacao));
+fillSelect("fResponsavel", rawData.map(x => x.responsavel));
+fillSelect("fSistema", rawData.map(x => x.sistema));
+fillSelect("fStatus", [...new Set(rawData.map(x => normalizeStatus(x.status)))]);
+
+let chartStatus, chartResp, chartSistema;
+
+function applyFilters() {
+  const fObrigacao = document.getElementById("fObrigacao").value;
+  const fResponsavel = document.getElementById("fResponsavel").value;
+  const fSistema = document.getElementById("fSistema").value;
+  const fStatus = document.getElementById("fStatus").value;
+
+  const data = rawData.filter(r =>
+    (!fObrigacao || r.obrigacao === fObrigacao) &&
+    (!fResponsavel || r.responsavel === fResponsavel) &&
+    (!fSistema || r.sistema === fSistema) &&
+    (!fStatus || normalizeStatus(r.status) === fStatus)
+  );
+
+  renderKPIs(data);
+  renderTable(data);
+  renderTimeline(data);
+  renderCharts(data);
+}
+
+function renderKPIs(data) {
+  const total = data.length;
+  const planned = data.filter(x => x.termino).length;
+  const done = data.filter(x => normalizeStatus(x.status) === "Concluído").length;
+  const late = data.filter(x => x.termino && normalizeStatus(x.status) !== "Concluído" && parseDate(x.termino) < parseDate(TODAY)).length;
+
+  document.getElementById("kpiTotal").textContent = total;
+  document.getElementById("kpiPlanned").textContent = planned;
+  document.getElementById("kpiDone").textContent = done;
+  document.getElementById("kpiLate").textContent = late;
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  const [d,m,y] = str.split('/');
+  return new Date(`${y}-${m}-${d}T00:00:00`);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById("tbodyActivities");
+  tbody.innerHTML = "";
+  data.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.num}</td>
+      <td>${escapeHtml(r.atividade)}</td>
+      <td>${escapeHtml(r.obrigacao)}</td>
+      <td>${escapeHtml(r.responsavel)}</td>
+      <td>${escapeHtml(r.sistema)}</td>
+      <td><span class="badge ${badgeClass(r.status)}">${escapeHtml(normalizeStatus(r.status))}</span></td>
+      <td>${r.inicio || "-"}</td>
+      <td>${r.termino || "-"}</td>
+      <td>${escapeHtml(r.observacao || "")}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderTimeline(data) {
+  const el = document.getElementById("timelineGrid");
+  el.innerHTML = "";
+  const header = document.createElement("div");
+  header.className = "timeline-header";
+  header.innerHTML = `<div>Atividade</div><div>Obrigação</div><div>Responsável</div><div>Status</div><div>Cronograma</div>`;
+  el.appendChild(header);
+
+  data.forEach(r => {
+    const row = document.createElement("div");
+    row.className = "timeline-row";
+    let barHtml = `<div class="bar-area"></div>`;
+    if (r.timeline && r.timeline.hasDates) {
+      const left = (r.timeline.offset / TOTAL_DAYS) * 100;
+      const width = (r.timeline.duration / TOTAL_DAYS) * 100;
+      barHtml = `
+        <div class="bar-area" title="${r.inicio} até ${r.termino}">
+          <div class="bar ${badgeClass(r.status)}" style="left:${left}%; width:${Math.max(width, 1.2)}%;"></div>
+        </div>`;
+    }
+    row.innerHTML = `
+      <div title="${escapeHtml(r.atividade)}">${escapeHtml(r.atividade)}</div>
+      <div>${escapeHtml(r.obrigacao)}</div>
+      <div>${escapeHtml(r.responsavel)}</div>
+      <div><span class="badge ${badgeClass(r.status)}">${escapeHtml(normalizeStatus(r.status))}</span></div>
+      <div>${barHtml}</div>
+    `;
+    el.appendChild(row);
+  });
+}
+
+function countBy(data, field, transformFn=null) {
+  const map = {};
+  data.forEach(r => {
+    const raw = r[field] || "";
+    const key = transformFn ? transformFn(raw) : (raw || "Sem informação");
+    map[key] = (map[key] || 0) + 1;
+  });
+  return map;
+}
+
+function renderCharts(data) {
+  const statusMap = countBy(data, "status", normalizeStatus);
+  const respMap = countBy(data, "responsavel");
+  const sistemaMap = countBy(data, "sistema");
+
+  if (chartStatus) chartStatus.destroy();
+  if (chartResp) chartResp.destroy();
+  if (chartSistema) chartSistema.destroy();
+
+  chartStatus = new Chart(document.getElementById("chartStatus"), {
     type: 'doughnut',
     data: {
-        labels: ['Concluído','Em andamento','Não iniciado'],
-        datasets: [{
-            data: [0,0,23]
-        }]
+      labels: Object.keys(statusMap),
+      datasets: [{ data: Object.values(statusMap) }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
     }
-});
-</script>
+  });
 
-<h2>Detalhamento das Atividades</h2>
-<table border="1">
-<tr>
-<th>Atividade</th><th>Responsável</th><th>Status</th><th>Início</th><th>Fim</th>
-</tr>
-<tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr></table></body></html>
+  chartResp = new Chart(document.getElementById("chartResp"), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(respMap),
+      datasets: [{ label: 'Atividades', data: Object.values(respMap) }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+
+  chartSistema = new Chart(document.getElementById("chartSistema"), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(sistemaMap),
+      datasets: [{ label: 'Atividades', data: Object.values(sistemaMap) }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+}
+
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+["fObrigacao", "fResponsavel", "fSistema", "fStatus"].forEach(id => {
+  document.getElementById(id).addEventListener("change", applyFilters);
+});
+
+applyFilters();
+</script>
+</body>
+</html>
